@@ -110,6 +110,6 @@ class User extends Authenticatable
      */
     public function isActive(): bool
     {
-        return $this->status === UserStatus::ACTIVE;
+        return $this->status->value == UserStatus::ACTIVE;
     }
 }
