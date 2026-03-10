@@ -32,7 +32,7 @@ class AuthController extends Controller
         $user = Auth::user();
 
         // Check if user is active
-        if ($user->status != 1) {
+        if ($user->isActive()) {
             Auth::logout();
             return $this->forbiddenResponse('Tài khoản của bạn đã bị khóa');
         }
