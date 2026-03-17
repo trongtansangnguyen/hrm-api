@@ -1,8 +1,8 @@
 {
   "info": {
-    "_postman_id": "hrm-api-auth",
-    "name": "HRM API - Authentication",
-    "description": "HRM System API with OTP-based password reset",
+    "_postman_id": "hrm-api",
+    "name": "HRM API",
+    "description": "HRM System API - Authentication & Employee Management",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -19,7 +19,10 @@
   ],
   "item": [
     {
-      "name": "Login",
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login",
       "request": {
         "method": "POST",
         "header": [
@@ -249,6 +252,233 @@
             }
           ],
           "body": "{\n  \"success\": false,\n  \"message\": \"Bạn đã nhập sai OTP quá nhiều lần. Vui lòng thử lại sau.\",\n  \"retry_after_seconds\": 300\n}"
+        }
+      ]
+    }
+      ]
+    },
+    {
+      "name": "Employees",
+      "item": [
+        {
+          "name": "Get All Employees",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/employees?per_page=15&search=&status=&department_id=&position_id=",
+              "host": ["{{base_url}}"],
+              "path": ["employees"],
+              "query": [
+                {
+                  "key": "per_page",
+                  "value": "15",
+                  "description": "Number of items per page"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "description": "Search by name, email, phone, employee_code"
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "Filter by status: working, resigned, suspended"
+                },
+                {
+                  "key": "department_id",
+                  "value": "",
+                  "description": "Filter by department ID"
+                },
+                {
+                  "key": "position_id",
+                  "value": "",
+                  "description": "Filter by position ID"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Employee",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employee_code\": \"EMP001\",\n  \"first_name\": \"Nguyen\",\n  \"last_name\": \"Van A\",\n  \"gender\": \"male\",\n  \"date_of_birth\": \"1990-01-15\",\n  \"phone\": \"0123456789\",\n  \"email\": \"nguyenvana@example.com\",\n  \"address\": \"123 Street, District, City\",\n  \"identity_number\": \"001234567890\",\n  \"join_date\": \"2024-01-01\",\n  \"status\": \"working\",\n  \"department_id\": 1,\n  \"position_id\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/employees",
+              "host": ["{{base_url}}"],
+              "path": ["employees"]
+            }
+          },
+          "response": [
+            {
+              "name": "201 - Created",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Tạo nhân viên thành công\",\n  \"data\": {\n    \"id\": 1,\n    \"employee_code\": \"EMP001\",\n    \"first_name\": \"Nguyen\",\n    \"last_name\": \"Van A\",\n    \"full_name\": \"Nguyen Van A\",\n    \"gender\": \"male\",\n    \"date_of_birth\": \"1990-01-15\",\n    \"phone\": \"0123456789\",\n    \"email\": \"nguyenvana@example.com\",\n    \"address\": \"123 Street, District, City\",\n    \"identity_number\": \"001234567890\",\n    \"join_date\": \"2024-01-01 00:00:00\",\n    \"status\": \"working\",\n    \"department_id\": 1,\n    \"department\": {\n      \"id\": 1,\n      \"name\": \"IT Department\"\n    },\n    \"position_id\": 1,\n    \"position\": {\n      \"id\": 1,\n      \"name\": \"Developer\"\n    },\n    \"created_at\": \"2024-01-01 00:00:00\",\n    \"updated_at\": \"2024-01-01 00:00:00\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Employee by ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/employees/1",
+              "host": ["{{base_url}}"],
+              "path": ["employees", "1"]
+            }
+          }
+        },
+        {
+          "name": "Update Employee",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Nguyen\",\n  \"last_name\": \"Van B\",\n  \"phone\": \"0987654321\",\n  \"address\": \"456 New Street, District, City\",\n  \"status\": \"working\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/employees/1",
+              "host": ["{{base_url}}"],
+              "path": ["employees", "1"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 - Success",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Cập nhật nhân viên thành công\",\n  \"data\": {\n    \"id\": 1,\n    \"employee_code\": \"EMP001\",\n    \"first_name\": \"Nguyen\",\n    \"last_name\": \"Van B\",\n    \"full_name\": \"Nguyen Van B\",\n    \"gender\": \"male\",\n    \"date_of_birth\": \"1990-01-15\",\n    \"phone\": \"0987654321\",\n    \"email\": \"nguyenvana@example.com\",\n    \"address\": \"456 New Street, District, City\",\n    \"identity_number\": \"001234567890\",\n    \"join_date\": \"2024-01-01 00:00:00\",\n    \"status\": \"working\",\n    \"department_id\": 1,\n    \"department\": {\n      \"id\": 1,\n      \"name\": \"IT Department\"\n    },\n    \"position_id\": 1,\n    \"position\": {\n      \"id\": 1,\n      \"name\": \"Developer\"\n    },\n    \"created_at\": \"2024-01-01 00:00:00\",\n    \"updated_at\": \"2024-01-02 10:30:00\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Employee",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/employees/1",
+              "host": ["{{base_url}}"],
+              "path": ["employees", "1"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 - Success",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Xóa nhân viên thành công\",\n  \"data\": null\n}"
+            }
+          ]
         }
       ]
     }
