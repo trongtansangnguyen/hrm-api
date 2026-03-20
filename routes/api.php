@@ -1,11 +1,13 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\EmployeeController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
 Route::prefix('auth')->group(function () {
+    Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])
         ->middleware('email_ip_rate_limit:forgot');
@@ -20,6 +22,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/me', [AuthController::class, 'me']);
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::post('/change-password', [AuthController::class, 'changePassword']);
+    });
+
+    Route::prefix('attendance')->group(function () {
+        Route::get('/today', [AttendanceController::class, 'today']);
+        Route::post('/check-in', [AttendanceController::class, 'checkIn']);
+        Route::post('/check-out', [AttendanceController::class, 'checkOut']);
     });
 });
 

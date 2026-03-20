@@ -117,6 +117,13 @@ return [
     | Supported drivers: "file", "cache"
     |
     */
+    'company_lat' => env('COMPANY_LAT'),
+    'company_lng' => env('COMPANY_LNG'),
+    'company_radius' => env('COMPANY_RADIUS'),
+
+    'work_start' => env('WORK_START'),
+    'work_end' => env('WORK_END'),
+    'late_after' => env('LATE_AFTER'),
 
     'maintenance' => [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),

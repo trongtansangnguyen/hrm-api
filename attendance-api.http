@@ -1,0 +1,40 @@
+@baseUrl = http://localhost:8000
+@token =
+
+### Login
+POST {{baseUrl}}/auth/login
+Accept: application/json
+Content-Type: application/json
+
+{
+  "email": "admin@hrm.com",
+  "password": "password"
+}
+
+### Attendance - Today
+GET {{baseUrl}}/attendance/today
+Accept: application/json
+Authorization: Bearer {{token}}
+
+### Attendance - Check In
+POST {{baseUrl}}/attendance/check-in
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{token}}
+X-Device-Id: dev-local-001
+
+{
+  "latitude": -6.2000000,
+  "longitude": 106.8166667
+}
+
+### Attendance - Check Out
+POST {{baseUrl}}/attendance/check-out
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "latitude": -6.2000000,
+  "longitude": 106.8166667
+}

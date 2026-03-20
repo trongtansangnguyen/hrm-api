@@ -12,13 +12,17 @@ class Attendance extends Model
     use HasFactory;
 
     protected $fillable = [
-        'employee_id',
-        'check_in',
-        'check_out',
-        'working_hours',
-        'date',
-        'status',
-    ];
+    'employee_id',
+    'check_in',
+    'check_out',
+    'working_hours',
+    'date',
+    'status',
+    'latitude_in',
+    'longitude_in',
+    'latitude_out',
+    'longitude_out'
+];
 
     protected function casts(): array
     {

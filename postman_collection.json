@@ -8,7 +8,7 @@
   "variable": [
     {
       "key": "base_url",
-      "value": "http://localhost:8000/api",
+      "value": "http://localhost:8000",
       "type": "string"
     },
     {
@@ -22,6 +22,31 @@
       "name": "Authentication",
       "item": [
         {
+          "name": "Register",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"employee1@hrm.com\",\n  \"password\": \"password\",\n  \"password_confirmation\": \"password\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/register",
+          "host": ["{{base_url}}"],
+          "path": ["auth", "register"]
+        }
+      }
+    },
+    {
           "name": "Login",
       "request": {
         "method": "POST",
@@ -479,6 +504,112 @@
               "body": "{\n  \"success\": true,\n  \"message\": \"Xóa nhân viên thành công\",\n  \"data\": null\n}"
             }
           ]
+        }
+      ]
+    },
+    {
+      "name": "Attendance",
+      "item": [
+        {
+          "name": "Get Today Attendance",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/attendance/today",
+              "host": ["{{base_url}}"],
+              "path": ["attendance", "today"]
+            }
+          }
+        },
+        {
+          "name": "Check In",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Device-Id",
+                "value": "dev-local-001"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"latitude\": -6.2000000,\n  \"longitude\": 106.8166667\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/attendance/check-in",
+              "host": ["{{base_url}}"],
+              "path": ["attendance", "check-in"]
+            }
+          }
+        },
+        {
+          "name": "Check Out",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"latitude\": -6.2000000,\n  \"longitude\": 106.8166667\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/attendance/check-out",
+              "host": ["{{base_url}}"],
+              "path": ["attendance", "check-out"]
+            }
+          }
         }
       ]
     }

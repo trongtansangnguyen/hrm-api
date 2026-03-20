@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Auth\ChangePasswordRequest;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Http\Resources\UserResource;
+use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,6 +20,44 @@ use Illuminate\Support\Facades\RateLimiter;
 
 class AuthController extends Controller
 {
+    /**
+     * Register user
+     */
+    public function register(RegisterRequest $request): JsonResponse
+    {
+        $employee = null;
+
+        if ($request->filled('employee_id')) {
+            $employee = Employee::find($request->integer('employee_id'));
+
+            if (!$employee) {
+                return $this->notFoundResponse('Không tìm thấy nhân viên');
+            }
+
+            $existingAccount = User::where('employee_id', $employee->id)->exists();
+            if ($existingAccount) {
+                return $this->errorResponse('Nhân viên này đã có tài khoản', 422);
+            }
+        }
+
+        $user = User::create([
+            'employee_id' => $employee?->id,
+            'email' => strtolower((string) $request->email),
+            'password' => $request->password,
+            'role' => 3,
+            'status' => 1,
+            'email_verified_at' => now(),
+        ]);
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return $this->successResponse([
+            'user' => new UserResource($user),
+            'token' => $token,
+            'token_type' => 'Bearer',
+        ], 'Đăng ký thành công', 201);
+    }
+
     /**
      * Login user
      */
@@ -32,7 +72,7 @@ class AuthController extends Controller
         $user = Auth::user();
 
         // Check if user is active
-        if ($user->isActive()) {
+        if (!$user->isActive()) {
             Auth::logout();
             return $this->forbiddenResponse('Tài khoản của bạn đã bị khóa');
         }
