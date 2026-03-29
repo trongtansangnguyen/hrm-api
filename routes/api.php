@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
@@ -30,5 +31,13 @@ Route::middleware(['auth:sanctum', 'role:admin,manager'])->group(function () {
        Route::post('/', [EmployeeController::class, 'store']);
        Route::put('/{employee}', [EmployeeController::class, 'update']);
        Route::delete('/{employee}', [EmployeeController::class, 'destroy']);
+    });
+
+    Route::prefix('users')->group(function () {
+        Route::get('/', [UserController::class, 'index']);
+        Route::get('/{user}', [UserController::class, 'show']);
+        Route::post('/', [UserController::class, 'store']);
+        Route::put('/{user}', [UserController::class, 'update']);
+        Route::delete('/{user}', [UserController::class, 'destroy']);
     });
 });
