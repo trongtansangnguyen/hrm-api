@@ -20,8 +20,13 @@ class AttendanceService
         if ($exists) {
             return [
                 'success' => false,
-                'message' => 'Bạn đã check-in hôm nay',
+                'message' => 'Ban da check-in hom nay',
             ];
+        }
+
+        $networkValidation = $this->validateCompanyNetwork($ip);
+        if ($networkValidation !== null) {
+            return $networkValidation;
         }
 
         $locationValidation = $this->validateCompanyLocation($lat, $lng);
@@ -32,8 +37,8 @@ class AttendanceService
         $now = now();
         $lateAfterConfig = config('app.late_after');
         $lateAfter = $lateAfterConfig
-            ? Carbon::parse(today()->toDateString() . ' ' . $lateAfterConfig)
-            : Carbon::parse(today()->toDateString() . ' 08:00:00');
+            ? Carbon::parse(today()->toDateString().' '.$lateAfterConfig)
+            : Carbon::parse(today()->toDateString().' 08:00:00');
 
         $status = $now->gt($lateAfter)
             ? AttendanceStatus::LATE
@@ -52,12 +57,12 @@ class AttendanceService
 
         return [
             'success' => true,
-            'message' => 'Check-in thành công',
+            'message' => 'Check-in thanh cong',
             'status' => $status->label(),
         ];
     }
 
-    public function checkOut(int $employeeId, float $lat, float $lng): array
+    public function checkOut(int $employeeId, float $lat, float $lng, ?string $ip): array
     {
         $attendance = Attendance::query()
             ->where('employee_id', $employeeId)
@@ -67,22 +72,27 @@ class AttendanceService
         if (!$attendance) {
             return [
                 'success' => false,
-                'message' => 'Bạn chưa check-in',
+                'message' => 'Ban chua check-in',
             ];
         }
 
         if ($attendance->check_out) {
             return [
                 'success' => false,
-                'message' => 'Bạn đã check-out',
+                'message' => 'Ban da check-out',
             ];
         }
 
         if (!$attendance->check_in) {
             return [
                 'success' => false,
-                'message' => 'Bản ghi chấm công không hợp lệ',
+                'message' => 'Ban ghi cham cong khong hop le',
             ];
+        }
+
+        $networkValidation = $this->validateCompanyNetwork($ip);
+        if ($networkValidation !== null) {
+            return $networkValidation;
         }
 
         $locationValidation = $this->validateCompanyLocation($lat, $lng);
@@ -102,7 +112,7 @@ class AttendanceService
 
         return [
             'success' => true,
-            'message' => 'Check-out thành công',
+            'message' => 'Check-out thanh cong',
             'working_hours' => round($hours, 2),
         ];
     }
@@ -139,7 +149,7 @@ class AttendanceService
         if ($companyLat === null || $companyLng === null || $radius === null) {
             return [
                 'success' => false,
-                'message' => 'Chưa cấu hình vị trí công ty',
+                'message' => 'Chua cau hinh vi tri cong ty',
             ];
         }
 
@@ -153,10 +163,78 @@ class AttendanceService
         if ($distance > (float) $radius) {
             return [
                 'success' => false,
-                'message' => 'Bạn không ở trong khu vực công ty',
+                'message' => 'Ban khong o trong khu vuc cong ty',
             ];
         }
 
         return null;
+    }
+
+    private function validateCompanyNetwork(?string $ip): ?array
+    {
+        $allowedNetworks = config('app.company_wifi_ips', []);
+
+        if (empty($allowedNetworks)) {
+            return null;
+        }
+
+        if (!$ip) {
+            return [
+                'success' => false,
+                'message' => 'Khong xac dinh duoc IP thiet bi',
+            ];
+        }
+
+        foreach ($allowedNetworks as $allowedNetwork) {
+            if ($this->ipMatchesNetwork($ip, $allowedNetwork)) {
+                return null;
+            }
+        }
+
+        return [
+            'success' => false,
+            'message' => 'Ban khong ket noi dung mang cong ty',
+        ];
+    }
+
+    private function ipMatchesNetwork(string $ip, string $allowedNetwork): bool
+    {
+        $allowedNetwork = trim($allowedNetwork);
+        if ($allowedNetwork === '') {
+            return false;
+        }
+
+        if (!str_contains($allowedNetwork, '/')) {
+            return $ip === $allowedNetwork;
+        }
+
+        [$subnet, $prefix] = explode('/', $allowedNetwork, 2);
+        $ipBinary = @inet_pton($ip);
+        $subnetBinary = @inet_pton($subnet);
+
+        if ($ipBinary === false || $subnetBinary === false || strlen($ipBinary) !== strlen($subnetBinary)) {
+            return false;
+        }
+
+        $prefix = (int) $prefix;
+        $maxPrefix = strlen($ipBinary) * 8;
+        if ($prefix < 0 || $prefix > $maxPrefix) {
+            return false;
+        }
+
+        $fullBytes = intdiv($prefix, 8);
+        $remainingBits = $prefix % 8;
+
+        if ($fullBytes > 0 && substr($ipBinary, 0, $fullBytes) !== substr($subnetBinary, 0, $fullBytes)) {
+            return false;
+        }
+
+        if ($remainingBits === 0) {
+            return true;
+        }
+
+        $mask = ((0xFF << (8 - $remainingBits)) & 0xFF);
+
+        return (ord($ipBinary[$fullBytes]) & $mask) === (ord($subnetBinary[$fullBytes]) & $mask);
     }
 }

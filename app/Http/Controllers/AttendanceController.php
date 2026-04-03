@@ -47,7 +47,8 @@ class AttendanceController extends Controller
         $result = $this->attendanceService->checkOut(
             $employeeId,
             (float) $request->latitude,
-            (float) $request->longitude
+            (float) $request->longitude,
+            $request->ip()
         );
 
         if (!$result['success']) {

@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\EmployeeController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
@@ -13,6 +14,26 @@ Route::prefix('auth')->group(function () {
         ->middleware('email_ip_rate_limit:forgot');
     Route::post('/reset-password', [AuthController::class, 'resetPassword'])
         ->middleware('email_ip_rate_limit:reset');
+});
+
+Route::get('/debug/my-ip', function (Request $request) {
+    $forwardedFor = $request->header('X-Forwarded-For');
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Current request IP',
+        'data' => [
+            'ip' => $request->ip(),
+            'ips' => $request->ips(),
+            'remote_addr' => $request->server('REMOTE_ADDR'),
+            'forwarded_client_ip' => $forwardedFor ? trim(explode(',', $forwardedFor)[0]) : null,
+            'headers' => [
+                'x_forwarded_for' => $forwardedFor,
+                'x_real_ip' => $request->header('X-Real-IP'),
+                'forwarded' => $request->header('Forwarded'),
+            ],
+        ],
+    ]);
 });
 
 // Protected routes

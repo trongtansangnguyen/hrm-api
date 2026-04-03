@@ -21,7 +21,9 @@ class Attendance extends Model
     'latitude_in',
     'longitude_in',
     'latitude_out',
-    'longitude_out'
+    'longitude_out',
+    'ip_address',
+    'device_id',
 ];
 
     protected function casts(): array

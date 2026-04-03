@@ -120,6 +120,10 @@ return [
     'company_lat' => env('COMPANY_LAT'),
     'company_lng' => env('COMPANY_LNG'),
     'company_radius' => env('COMPANY_RADIUS'),
+    'company_wifi_ips' => array_values(array_filter(array_map(
+        'trim',
+        explode(',', (string) env('COMPANY_WIFI_IPS', ''))
+    ))),
 
     'work_start' => env('WORK_START'),
     'work_end' => env('WORK_END'),

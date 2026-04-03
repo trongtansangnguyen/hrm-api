@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "hrm-api",
     "name": "HRM API",
-    "description": "HRM System API - Authentication & Employee Management",
+    "description": "HRM System API collection for authentication, employee management, and attendance tracking. Attendance check-in/check-out now uses GPS validation and can optionally require company Wi-Fi/IP via COMPANY_WIFI_IPS on the backend.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -509,6 +509,7 @@
     },
     {
       "name": "Attendance",
+      "description": "Attendance flow for employees. Check-in/check-out requires Bearer token, valid GPS coordinates, and may also require the request IP to match company Wi-Fi/IP ranges configured on the server.",
       "item": [
         {
           "name": "Get Today Attendance",
@@ -540,6 +541,7 @@
         {
           "name": "Check In",
           "request": {
+            "description": "Employee check-in. Requires latitude/longitude inside company radius. If backend COMPANY_WIFI_IPS is configured, the request must also come from company Wi-Fi/IP. Send X-Device-Id for device tracking.",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -579,6 +581,7 @@
         {
           "name": "Check Out",
           "request": {
+            "description": "Employee check-out. Requires latitude/longitude inside company radius. If backend COMPANY_WIFI_IPS is configured, the request must also come from company Wi-Fi/IP.",
             "auth": {
               "type": "bearer",
               "bearer": [

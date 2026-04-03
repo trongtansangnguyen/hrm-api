@@ -11,6 +11,14 @@ Content-Type: application/json
   "password": "password"
 }
 
+### Note
+# Attendance requests require GPS coordinates in company radius.
+# If backend env COMPANY_WIFI_IPS is configured, requests must also come from company Wi-Fi/IP.
+
+### Debug - My IP
+GET {{baseUrl}}/debug/my-ip
+Accept: application/json
+
 ### Attendance - Today
 GET {{baseUrl}}/attendance/today
 Accept: application/json
