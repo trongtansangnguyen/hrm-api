@@ -69,7 +69,7 @@ class AuthController extends Controller
             return $this->unauthorizedResponse('Email hoặc mật khẩu không chính xác');
         }
 
-        $user = Auth::user();
+        $user = Auth::user(); 
 
         // Check if user is active
         if (!$user->isActive()) {

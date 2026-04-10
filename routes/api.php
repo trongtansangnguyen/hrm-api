@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/test-error', function () {
+        throw new \RuntimeException('Test exception from auth route group');
+    });
     Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])
         ->middleware('email_ip_rate_limit:forgot');
     Route::post('/reset-password', [AuthController::class, 'resetPassword'])

@@ -8,6 +8,7 @@ use App\Http\Resources\EmployeeResource;
 use App\Models\Employee;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class EmployeeController extends Controller
 {
@@ -68,17 +69,42 @@ class EmployeeController extends Controller
     /**
      * Store a newly created employee.
      */
+    // public function store(StoreEmployeeRequest $request): JsonResponse
+    // {
+    //     $employee = Employee::create($request->validated());
+    //     $employee->load(['department', 'position']);
+
+    //     return $this->successResponse(
+    //         new EmployeeResource($employee),
+    //         'Tạo mới nhân viên thành công',
+    //         201
+    //     );
+    // }
+
     public function store(StoreEmployeeRequest $request): JsonResponse
     {
-        $employee = Employee::create($request->validated());
-        $employee->load(['department', 'position']);
+        try {
+            throw new \Exception('Test error store employee');
 
-        return $this->successResponse(
-            new EmployeeResource($employee),
-            'Tạo mới nhân viên thành công',
-            201
-        );
+            $employee = Employee::create($request->validated());
+            $employee->load(['department', 'position']);
+
+            return $this->successResponse(
+                new EmployeeResource($employee),
+                'Tạo mới nhân viên thành công',
+                201
+            );
+        } catch (\Throwable $e) {
+            Log::error('Create employee failed', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+
+            return $this->errorResponse('Có lỗi xảy ra khi tạo nhân viên', 500);
+        }
     }
+
 
     /**
      * Display the specified employee.
