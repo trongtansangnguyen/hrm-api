@@ -3,10 +3,11 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\LeaveRequestController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-// Public routes
+// Public routes    
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
@@ -61,5 +62,20 @@ Route::middleware(['auth:sanctum', 'role:admin,manager'])->group(function () {
        Route::post('/', [EmployeeController::class, 'store']);
        Route::put('/{employee}', [EmployeeController::class, 'update']);
        Route::delete('/{employee}', [EmployeeController::class, 'destroy']);
+    });
+});
+
+
+Route::middleware('auth:sanctum')->group(function () {
+
+    Route::apiResource('leave-requests', LeaveRequestController::class);
+
+    // Chỉ Manager mới được phê duyệt và từ chối
+    Route::middleware('role:manager')->group(function () {
+        Route::post('leave-requests/{leaveRequest}/approve', [LeaveRequestController::class, 'approve'])
+             ->name('leave-requests.approve');
+
+        Route::post('leave-requests/{leaveRequest}/reject', [LeaveRequestController::class, 'reject'])
+             ->name('leave-requests.reject');
     });
 });
