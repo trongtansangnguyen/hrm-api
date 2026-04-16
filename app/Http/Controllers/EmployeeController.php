@@ -102,10 +102,11 @@ class EmployeeController extends Controller
     public function store(StoreEmployeeRequest $request): JsonResponse
     {
         try {
-            throw new \Exception('Test error store employee');
-
             $employee = Employee::create($request->validated());
             $employee->load(['department', 'position']);
+
+            // Broadcast employee created event
+            EmployeeCreated::dispatch($employee);
 
             return $this->successResponse(
                 new EmployeeResource($employee),

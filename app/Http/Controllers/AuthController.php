@@ -125,10 +125,7 @@ class AuthController extends Controller
             'password' => Hash::make($request->new_password),
         ]);
 
-        // Revoke all tokens
-        $user->tokens()->delete();
-
-        return $this->successResponse(null, 'Đổi mật khẩu thành công. Vui lòng đăng nhập lại.');
+        return $this->successResponse(null, 'Đổi mật khẩu thành công.');
     }
 
     /**
