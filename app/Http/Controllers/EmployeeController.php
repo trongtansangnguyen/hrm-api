@@ -2,16 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\EmployeeCreated;
+use App\Events\EmployeeDeleted;
 use App\Http\Requests\Employee\StoreEmployeeRequest;
 use App\Http\Requests\Employee\UpdateEmployeeRequest;
 use App\Http\Resources\EmployeeResource;
 use App\Models\Employee;
+use App\Services\EmployeeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class EmployeeController extends Controller
 {
+    public function __construct(
+        private readonly EmployeeService $employeeService
+    ) {
+    }
+
     /**
      * Display a listing of employees.
      */
@@ -64,6 +72,16 @@ class EmployeeController extends Controller
                 'to' => $employees->lastItem(),
             ],
         ], "Truy vấn thành công");
+    }
+
+    /**
+     * Get total employee count.
+     */
+    public function count(): JsonResponse
+    {
+        return $this->successResponse([
+            'count' => $this->employeeService->getEmployeeCount(),
+        ], 'Lấy tổng số nhân viên thành công');
     }
 
     /**
@@ -152,6 +170,9 @@ class EmployeeController extends Controller
         }
 
         $employee->delete();
+
+        // Broadcast employee deleted event
+        EmployeeDeleted::dispatch($id);
 
         return $this->successResponse(null, 'Xóa nhân viên thành công');
     }

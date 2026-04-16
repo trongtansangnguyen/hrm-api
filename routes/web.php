@@ -64,3 +64,7 @@ Route::post('/users', function () {
 
     return redirect('/users')->with('success', 'User created successfully!');
 });
+
+Route::get('/real-time', function () {
+    return view('real-time');
+});
