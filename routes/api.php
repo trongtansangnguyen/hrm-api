@@ -55,6 +55,8 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 });
 
+Route::get('/employees/count', [EmployeeController::class, 'count'])->name('employees.count');
+
 Route::middleware(['auth:sanctum', 'role:admin,manager'])->group(function () {
     Route::prefix('employees')->group(function () {
        Route::get('/', [EmployeeController::class, 'index']);

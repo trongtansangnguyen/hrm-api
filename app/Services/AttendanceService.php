@@ -7,23 +7,12 @@ use App\Helpers\GPSHelper;
 use App\Models\Attendance;
 use App\Models\Employee;
 use Carbon\Carbon;
+use Illuminate\Database\QueryException;
 
 class AttendanceService
 {
     public function checkIn(int $employeeId, float $lat, float $lng, ?string $ip, ?string $deviceId): array
     {
-        $exists = Attendance::query()
-            ->where('employee_id', $employeeId)
-            ->whereDate('date', today())
-            ->exists();
-
-        if ($exists) {
-            return [
-                'success' => false,
-                'message' => 'Ban da check-in hom nay',
-            ];
-        }
-
         $networkValidation = $this->validateCompanyNetwork($ip);
         if ($networkValidation !== null) {
             return $networkValidation;
@@ -44,16 +33,27 @@ class AttendanceService
             ? AttendanceStatus::LATE
             : AttendanceStatus::ON_TIME;
 
-        Attendance::create([
-            'employee_id' => $employeeId,
-            'check_in' => $now,
-            'latitude_in' => $lat,
-            'longitude_in' => $lng,
-            'date' => $now->toDateString(),
-            'status' => $status,
-            'ip_address' => $ip,
-            'device_id' => $deviceId,
-        ]);
+        try {
+            Attendance::query()->create([
+                'employee_id' => $employeeId,
+                'check_in' => $now,
+                'latitude_in' => $lat,
+                'longitude_in' => $lng,
+                'date' => $now->toDateString(),
+                'status' => $status,
+                'ip_address' => $ip,
+                'device_id' => $deviceId,
+            ]);
+        } catch (QueryException $exception) {
+            if ($this->isDuplicateAttendanceException($exception)) {
+                return [
+                    'success' => false,
+                    'message' => 'Ban da check-in hom nay',
+                ];
+            }
+
+            throw $exception;
+        }
 
         return [
             'success' => true,
@@ -102,42 +102,52 @@ class AttendanceService
 
         $now = now();
         $hours = $attendance->check_in->diffInMinutes($now) / 60;
+        $roundedHours = round($hours, 2);
 
-        $attendance->update([
+        $updated = Attendance::query()
+            ->whereKey($attendance->id)
+            ->whereNull('check_out')
+            ->update([
             'check_out' => $now,
             'latitude_out' => $lat,
             'longitude_out' => $lng,
-            'working_hours' => round($hours, 2),
+            'working_hours' => $roundedHours,
         ]);
+
+        if ($updated === 0) {
+            return [
+                'success' => false,
+                'message' => 'Ban da check-out',
+            ];
+        }
 
         return [
             'success' => true,
             'message' => 'Check-out thanh cong',
-            'working_hours' => round($hours, 2),
+            'working_hours' => $roundedHours,
         ];
     }
 
     public function autoAbsent(): void
     {
         $today = today();
-        $employeeIds = Employee::query()->pluck('id');
-
-        foreach ($employeeIds as $id) {
-            $exists = Attendance::query()
-                ->where('employee_id', $id)
-                ->whereDate('date', $today)
-                ->exists();
-
-            if ($exists) {
-                continue;
-            }
-
-            Attendance::create([
+        $timestamp = now();
+        $rows = Employee::query()
+            ->pluck('id')
+            ->map(fn (int $id): array => [
                 'employee_id' => $id,
-                'date' => $today,
-                'status' => AttendanceStatus::ABSENT,
-            ]);
+                'date' => $today->toDateString(),
+                'status' => AttendanceStatus::ABSENT->value,
+                'created_at' => $timestamp,
+                'updated_at' => $timestamp,
+            ])
+            ->all();
+
+        if ($rows === []) {
+            return;
         }
+
+        Attendance::query()->insertOrIgnore($rows);
     }
 
     private function validateCompanyLocation(float $lat, float $lng): ?array
@@ -236,5 +246,16 @@ class AttendanceService
         $mask = ((0xFF << (8 - $remainingBits)) & 0xFF);
 
         return (ord($ipBinary[$fullBytes]) & $mask) === (ord($subnetBinary[$fullBytes]) & $mask);
+    }
+
+    private function isDuplicateAttendanceException(QueryException $exception): bool
+    {
+        $sqlState = $exception->errorInfo[0] ?? null;
+        $driverCode = (int) ($exception->errorInfo[1] ?? 0);
+
+        return $sqlState === '23000'
+            || $sqlState === '23505'
+            || $driverCode === 1062
+            || $driverCode === 19;
     }
 }
