@@ -12,6 +12,7 @@ use App\Services\EmployeeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class EmployeeController extends Controller
 {
@@ -25,11 +26,16 @@ class EmployeeController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $perPage = $request->get('per_page', 15);
-        $search = $request->get('search');
-        $status = $request->get('status');
-        $departmentId = $request->get('department_id');
-        $positionId = $request->get('position_id');
+        $perPage = $request->input('per_page', 15);
+        $search = $request->input('search');
+        $status = $request->input('status');
+        $departmentId = $request->input('department_id');
+        $positionId = $request->input('position_id');
+        $joinedDateFrom = $request->input('joined_date_from');
+        $joinedDateTo = $request->input('joined_date_to');
+
+        $joinedDateFrom = $joinedDateFrom ? Carbon::parse($joinedDateFrom)->startOfDay()->toDateTimeString() : null;
+        $joinedDateTo = $joinedDateTo ? Carbon::parse($joinedDateTo)->endOfDay()->toDateTimeString() : null;
 
         $query = Employee::with(['department', 'position']);
 
@@ -57,6 +63,14 @@ class EmployeeController extends Controller
         // Filter by position
         if ($positionId) {
             $query->where('position_id', $positionId);
+        }
+
+        if ($joinedDateFrom) {
+            $query->whereDate('join_date', '>=', $joinedDateFrom);
+        }
+
+        if ($joinedDateTo) {
+            $query->whereDate('join_date', '<=', $joinedDateTo);
         }
 
         $employees = $query->orderBy('created_at', 'desc')->paginate($perPage);
