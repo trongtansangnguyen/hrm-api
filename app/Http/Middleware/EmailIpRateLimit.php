@@ -30,7 +30,7 @@ class EmailIpRateLimit
 
             return response()->json([
                 'success' => false,
-                'message' => 'Too many requests. Please try again later.',
+                'message' => 'Bạn gửi quá nhiều yêu cầu, vui lòng thử lại sau 1 thời gian.',
                 'retry_after_seconds' => $retryAfter,
             ], 429);
         }
